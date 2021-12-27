@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        input {
+            border: 1px solid #ccc;
+            padding: 4px 5px;
+            margin-top: 10px;
+            border-radius: 2px;
+        }
+
+        p {
+            background: #ccc;
+            padding: 10px;
+            font-size: 17px;
+            color: #000;
+            width: 231px;
+            border-radius: 2px;
+        }
+
+        img#preview {
+            border: 2px solid #000;
+        }
+
+        img {
+            cursor: pointer;
+        }
+
+        .uploadSec {
+            width: 300px;
+            border: 1px solid;
+            margin-top: 10px;
+            padding-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        i {
+            color: #000;
+        }
+    </style>
+    <!--
+exif Library to fetch latitude, longitude and camera details
+-->
+    <script src="exif.min.js"></script>
+</head>
+
+<body>
+    <h2>Fetching Latitude and longitude from Image</h2>
+
+    <img src="IMG_20200222_154426.jpg" class="DisplayImage" alt="" height="260px" />
+    <img src="angular.png" class="DisplayImage" alt="" height="260px" />
+    <img src="" class="" id="preview" alt="Uploaded image" height="260px" /><br>
+    <i>Click on image to display the Details</i>
+    <div class="uploadSec">
+        <label for="uploadFile">Upload Image Here</label><br>
+        <input type="file" id="uploadFile" accept="image/*" /><br>
+    </div>
+    <div class="details">
+        <p>Latitude : <span id="Lati"></span> </p>
+        <p>Longitude : <span id="Long"></span></p>
+    </div>
+    <script>
+        (function () {
+            document.getElementById("uploadFile").onchange = function (el) {
+                readURL(this)
+                EXIF.getData(el.target.files[0], function () {
+
+                    EXIF.getData(this, () => {
+                        console.log(this)
+                        if (Object.keys(this.exifdata).length > 0) {
+                            camera_details(this.exifdata)
+                            generate_lat_lang(this)
+                        }
+                        else {
+                            noDataAvailable()
+                        }
+
+                    });
+                });
+            }
+
+        })();
+
+        function readURL(input) {
+            ///reading the Uploading file
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    document.getElementById("preview").src = e.target.result
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function noDataAvailable() {
+
+            document.getElementById("Lati").innerText = "N/A"
+            document.getElementById("Long").innerText = "N/A"
+            alert("No GPS Data Available")
+        }
+
+        //getting camera details 
+        function camera_details(exifData = '') {
+            var company = "N/A"
+            if (exifData.Make) {
+                company = exifData.Make;
+            }
+
+        }
+
+        function generate_lat_lang(imageData = '') {
+
+            //geting cordinates of latitude
+            var latDegree = imageData.exifdata.GPSLatitude[0].numerator;
+            var latMinute = imageData.exifdata.GPSLatitude[1].numerator;
+            var latSecond = imageData.exifdata.GPSLatitude[2].numerator / imageData.exifdata.GPSLatitude[2].denominator;
+
+            document.getElementById("Lati").innerText = (latDegree + (latMinute / 60) + (latSecond / 3600)).toFixed(8);;
+            //geting cordinates of longitude
+            var lonDegree = imageData.exifdata.GPSLongitude[0].numerator;
+            var lonMinute = imageData.exifdata.GPSLongitude[1].numerator;
+            var lonSecond = imageData.exifdata.GPSLongitude[2].numerator / imageData.exifdata.GPSLongitude[2].denominator;
+            document.getElementById("Long").innerText = (lonDegree + (lonMinute / 60) + (lonSecond / 3600)).toFixed(8);
+
+        }
+    </script>
+</body>
+
+</html>
